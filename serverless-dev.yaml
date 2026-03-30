@@ -47,10 +47,12 @@ provider:
         Resource:
         - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/email-templates-${self:provider.stage}
         
-      # - Effect: Allow
-      #   Action:
-      #     - sqs:SendMessage
-      #   Resource: arn:aws:sqs:eu-west-1:${aws:accountId}:add-log-queue-${self:provider.stage}     
+      - Effect: Allow
+        Action:
+        - sqs:SendMessage
+        Resource:
+        - arn:aws:sqs:eu-west-1:${aws:accountId}:add-log-queue-${self:provider.stage}
+        - arn:aws:sqs:eu-west-1:${aws:accountId}:error-log-queue-${self:provider.stage}     
 
   environment:
     STAGE: ${self:provider.stage}
@@ -68,6 +70,7 @@ provider:
     COGNITO_REGION: "eu-west-1"
     EMAIL_TEMPLATE_BUCKET: email-templates-${self:provider.stage}-${aws:accountId}
     EMAIL_TEMPLATE_TABLE: email-templates-${self:provider.stage}
+    ERROR_LOG_QUEUE_URL: https://sqs.eu-west-1.amazonaws.com/648485682397/error-log-queue-${self:provider.stage}
 
 package:
   patterns:
