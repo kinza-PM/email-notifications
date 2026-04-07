@@ -3,6 +3,9 @@ import redis from "../lib/redisClient.js";
 import { createCacheKey } from "../lib/cacheKey.js";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
+
+const ses = new SESClient({ region: "eu-west-1" });
 
 const s3 = new S3Client({ region: "eu-west-1" });
 const sqsClient = new SQSClient({
@@ -206,4 +209,55 @@ export const toS3Key = (str) => {
     .replace(/\s+/g, "-")     // replace spaces (one or more) with dash
     .replace(/[^\w\-\/]/g, "") // remove non-alphanumeric except dash and /
     .toLowerCase();           // optional: lowercase for consistency
+}
+
+export const sendEmailSES = async (toEmail, htmlContent) => {
+  const params = {
+    Source: "mansoormohammadali09@gmail.com", // verified SES sender
+    Destination: {
+      ToAddresses: ["muhammadalisuratwala@gmail.com"], // use the passed parameter
+    },
+    Message: {
+      Subject: {
+        Data: "Booking Confirmation - Al Rais Travels",
+        Charset: "UTF-8", // recommended
+      },
+      Body: {
+        Html: {
+          Data: htmlContent,
+          Charset: "UTF-8", // recommended
+        },
+      },
+    },
+  };
+
+  try {
+    const command = new SendEmailCommand(params);
+    const result = await ses.send(command);
+    console.log("Email sent:", result.MessageId);
+    return result;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
+};
+
+export const formatTime(dateTime) => {
+  const date = new Date(dateTime);
+
+  return date.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false // 24-hour format
+  });
+}
+
+export const formatDate(dateTime) => {
+  const date = new Date(dateTime);
+
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
 }
