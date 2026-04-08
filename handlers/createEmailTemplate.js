@@ -1,7 +1,7 @@
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
-import { globalHeaders, toS3Key, getSessionId } from "../helper/helper.js";
-import redis from "../lib/redisClient.js"; // your redis instance
+import { globalHeaders, toS3Key, getSessionId, createResponse, setRequestContext, logError } from "../helper/helper.js";
+import redis from "../lib/redisClient.js";
 import { createCacheKey } from "../lib/cacheKey.js";
 import {
     DynamoDBClient,
@@ -12,7 +12,9 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 const s3 = new S3Client({ region: process.env.region || 'eu-west-1' });
 const BUCKET_NAME = process.env.EMAIL_TEMPLATE_BUCKET
 
-export const handler = async (event) => {
+export const handler = async (event, context) => {
+    setRequestContext(event, context);
+    
     try {
         // --- Token Verification ---
         const body = JSON.parse(event.body || "{}");
@@ -29,14 +31,10 @@ export const handler = async (event) => {
         );
 
         if (missingFields.length > 0) {
-            return {
-                statusCode: 400,
-                ...globalHeaders(),
-                body: JSON.stringify({
-                    message: "Validation Error",
-                    missingFields
-                })
-            };
+            return createResponse(400, {
+                message: "Validation Error",
+                missingFields
+            });
         }
 
         const {
@@ -84,25 +82,24 @@ export const handler = async (event) => {
                 Item: item
             })
         );
-        return {
-            statusCode: 201,
-            ...globalHeaders(),
-            body: JSON.stringify({
-                message: "Template created successfully",
-                templateId,
-                version
-            })
-        };
+        return createResponse(201, {
+            message: "Template created successfully",
+            templateId,
+            version
+        });
 
     } catch (error) {
         console.error("Error in creating email templates", error.response?.data || error.message, error.stack);
-        return {
-            statusCode: 500,
-            ...globalHeaders(),
-            body: JSON.stringify({
-                message: error.response?.data || "Internal Server Error",
-                error: error.response?.data || error.message,
-            }),
-        };
+        
+        await logError(error, {
+            function: 'createEmailTemplate',
+            event: JSON.stringify(event)
+        });
+        
+        return createResponse(500, {
+            message: error.response?.data || "Internal Server Error",
+            error: error.response?.data || error.message,
+            stack: error.stack
+        });
     }
 };
