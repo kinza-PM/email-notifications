@@ -16,14 +16,14 @@ provider:
   name: aws
   runtime: nodejs20.x
   region: eu-west-1
-  stage: ${opt:stage, 'dev'}
+  stage: ${opt:stage, 'qa'}
 
   vpc:
     securityGroupIds:
     - !Ref LambdaSecurityGroup
     subnetIds:
-    - subnet-025cd3d6f9357cc16
-    - subnet-0db7e348636b19ee6
+     - subnet-07b9ebefc03119511
+     - subnet-04857ca7c56819035
 
   iam:
     role:
@@ -46,19 +46,11 @@ provider:
         - dynamodb:Query
         Resource:
         - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/email-templates-${self:provider.stage}
-
-      - Effect: Allow
-        Action:
-        - ses:SendEmail
-        - ses:SendRawEmail
-        Resource: "*"  
         
-      - Effect: Allow
-        Action:
-        - sqs:SendMessage
-        Resource:
-        - arn:aws:sqs:eu-west-1:${aws:accountId}:add-log-queue-${self:provider.stage}
-        - arn:aws:sqs:eu-west-1:${aws:accountId}:error-log-queue-${self:provider.stage}     
+      # - Effect: Allow
+      #   Action:
+      #     - sqs:SendMessage
+      #   Resource: arn:aws:sqs:eu-west-1:${aws:accountId}:add-log-queue-${self:provider.stage}     
 
   environment:
     STAGE: ${self:provider.stage}
@@ -67,7 +59,7 @@ provider:
     COMPANY_CODE: ${self:custom.serverlessSsmFetch.COMPANY_CODE}
     X_API_KEY: ${self:custom.serverlessSsmFetch.X_API_KEY}
     BASE_URL: ${self:custom.serverlessSsmFetch.BASE_URL}
-    REDIS_HOST: redis-rg-dev2.tforef.ng.0001.euw1.cache.amazonaws.com
+    REDIS_HOST: redis-rg-qa.ygymth.ng.0001.euw1.cache.amazonaws.com
     REDIS_PORT: 6379
     COGNITO_CLIENT_ID: ${self:custom.serverlessSsmFetch.COGNITO_CLIENT_ID}
     GUEST_JWT_SECRET: ${self:custom.serverlessSsmFetch.GUEST_JWT_SECRET}
@@ -76,7 +68,6 @@ provider:
     COGNITO_REGION: "eu-west-1"
     EMAIL_TEMPLATE_BUCKET: email-templates-${self:provider.stage}-${aws:accountId}
     EMAIL_TEMPLATE_TABLE: email-templates-${self:provider.stage}
-    ERROR_LOG_QUEUE_URL: https://sqs.eu-west-1.amazonaws.com/648485682397/error-log-queue-${self:provider.stage}
 
 package:
   patterns:
@@ -141,7 +132,7 @@ resources:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: Security group for Lambda
-        VpcId: vpc-0622a975b106604e0
+        VpcId: vpc-0462bd4dc795b34c6
         SecurityGroupEgress:
         - IpProtocol: -1
           CidrIp: 0.0.0.0/0
@@ -153,7 +144,7 @@ resources:
         IpProtocol: tcp
         FromPort: 6379
         ToPort: 6379
-        GroupId: sg-09bec78477dacc22b # EXISTING Redis SG
+        GroupId: sg-0af8cf19f6dca0862  # EXISTING Redis SG
         SourceSecurityGroupId: !Ref LambdaSecurityGroup
 
     EmailTemplatesTable:
@@ -216,12 +207,7 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: send-email-notification-dlq-${self:provider.stage}
-        MessageRetentionPeriod: 1209600 # 14 days 
-
-    SESIdentity:
-      Type: AWS::SES::EmailIdentity
-      Properties:
-        EmailIdentity: no-reply@yourdomain.com           
+        MessageRetentionPeriod: 1209600 # 14 days        
 
 plugins:
 - serverless-ssm-fetch
