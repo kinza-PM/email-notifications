@@ -9,7 +9,7 @@ export const handler = async (event, context) => {
 
             const recordData = JSON.parse(record.body);
             console.log("recordData**********", recordData);
-            const { username, bookingReferenceId, email, flightDetails, totalFare, ticketImage, taxFees } = recordData;
+            const { username, bookingReferenceId, email, flightDetails, totalFare, ticketImage, taxFees, passengerNames, passengersFares } = recordData;
             const groupedTaxes = Object.values(
                 taxFees.reduce((acc, curr) => {
                     if (!acc[curr.taxCode]) {
@@ -828,7 +828,7 @@ export const handler = async (event, context) => {
             <div class="card-header">
                 <div class="calendar-icon-wrapper">
                     <div class="calendar-icon">
-                        <img src="assets/images/calendar-check-fill 1.png" alt="Calendar Check Icon">
+                        <img src="https://emt-logos.s3.eu-west-1.amazonaws.com/airline-logos/calendar-check-fill-1.png" alt="Calendar Check Icon">
                     </div>
                 </div>
             </div>
@@ -844,7 +844,7 @@ export const handler = async (event, context) => {
         
         <div class="bottom-section">
             <div class="booking-reference">
-                <img src="assets/images/price-tag-3-fill 1.png" alt="Price Tag Icon" class="pin-icon">
+                <img src="https://emt-logos.s3.eu-west-1.amazonaws.com/airline-logos/price-tag-3-fill-1.png" alt="Price Tag Icon" class="pin-icon">
                 <span class="booking-label">Booking Reference:</span>
                 <span class="booking-number">${bookingReferenceId}</span>
             </div>
@@ -869,7 +869,12 @@ export const handler = async (event, context) => {
                         <div class="flight-info-section">
                             <div class="airline-info">
                                 <div class="airline-logo">
-                                    <img src="assets/images/logo.jpg" alt="Airline Logo">
+                                    <img 
+                                        src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png"
+                                        width="120"
+                                        height="40"
+                                        style="display:block;"
+                                        />
                                 </div>
                                 <div class="airline-details">
                                     <div class="airline-name">${flight.flightName}</div>
@@ -985,7 +990,7 @@ export const handler = async (event, context) => {
         <!-- Main Footer -->
         <div class="main-footer">
             <div class="footer-logo-container">
-                <img src="assets/images/main-logo.png" alt="AL RAIS TRAVEL Logo">
+                <img src="https://emt-logos.s3.eu-west-1.amazonaws.com/airline-logos/main-logo.png" alt="AL RAIS TRAVEL Logo">
             </div>
             
             <div class="footer-nav-links">

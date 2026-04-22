@@ -46,6 +46,12 @@ provider:
         - dynamodb:Query
         Resource:
         - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/email-templates-${self:provider.stage}
+
+      - Effect: Allow
+        Action:
+        - ses:SendEmail
+        - ses:SendRawEmail
+        Resource: "*"    
         
       # - Effect: Allow
       #   Action:

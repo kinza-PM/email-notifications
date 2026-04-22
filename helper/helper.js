@@ -242,7 +242,7 @@ export const sendEmailSES = async (toEmail, htmlContent) => {
   }
 };
 
-export const formatTime(dateTime) => {
+export const formatTime = (dateTime) => {
   const date = new Date(dateTime);
 
   return date.toLocaleTimeString("en-GB", {
@@ -252,7 +252,7 @@ export const formatTime(dateTime) => {
   });
 }
 
-export const formatDate(dateTime) => {
+export const formatDate = (dateTime) => {
   const date = new Date(dateTime);
 
   return date.toLocaleDateString("en-GB", {
